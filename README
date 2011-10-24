@@ -1,0 +1,13 @@
+RLE URL Encoder/Decoder
+
+Is a tiny PHP and JavaScript library that decodes/encodes (and shrinks) 
+long query strings (ie: country checkboxes) with simple run-length encoding
+
+This library is intended to shrink long URLs from something like:
+
+?country[]=Algeria&country[]=Angola&country[]=Barbados... (and few hundred more.)
+
+Into a predictable, short-encoded version such as:
+
+?c=a81ja104ja11
+
