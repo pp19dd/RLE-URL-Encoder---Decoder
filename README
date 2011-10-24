@@ -1,13 +1,87 @@
+================================================================================
 RLE URL Encoder/Decoder
+================================================================================
+Author: 	Dino Beslagic (pp19dd at gmail.com)
+Homepage: 	http://pp19dd.com/rle-url/
+About:		RLE URL encoder is a tiny PHP and JavaScript library that helps
+			encode or decode long query strings (ex: country checkboxes) into
+			short predictable string with a simple run-length encoding algorithm
 
-Is a tiny PHP and JavaScript library that decodes/encodes (and shrinks) 
-long query strings (ie: country checkboxes) with simple run-length encoding
+This library is intended to help shrink long URLs from something like:
+?country[]=Algeria&country[]=Angola&country[]=Barbados... (and 100s more)
+into a predictable, short-encoded version such as: ?c=a81ja104ja11
 
-This library is intended to shrink long URLs from something like:
+Notes:
+	*	User needs to encode each checkbox as a 1 or 0, ex: 111010101110101
+		And maintain forward-reverse relationship as they like
+	*	The library will also decode ?c=a81ja104ja11 into a reversible set of values
+	*	There is a compatible JavaScript version of this library
 
-?country[]=Algeria&country[]=Angola&country[]=Barbados... (and few hundred more.)
 
-Into a predictable, short-encoded version such as:
+How it works, simple version:
 
-?c=a81ja104ja11
+	If input string is "01111000011"
+	
+	Single "0" will be encoded as "n"
+	Single "1" will be encoded as "j"
+	Repeat "11" will be encoded as "B"
+	Repeat "00" will be encoded as "b"
+	Any repetitions of 1 or 0 longer than 2 characters will be encoded as:
+	
+		"A*"	Where A/a represents a 1/0 (repetition prefix)
+		"a*"	and * is number of times to repeat that prefix
+				example: A43 (43 1's)   or a33 (33 0's)
 
+	Thus, output string for this example should be "ba4b34a2"
+	
+	URL-length savings is achieved with much longer strings
+
+================================================================================
+USAGE EXAMPLE
+================================================================================
+
+STEP 1:	scan your checkboxes and store them into a string as 1's and 0's
+		Where 1/0 represents a checked state: true/false. for example:
+		
+		var to_encode = "";
+		$(".countries input[type=checkbox]").each( function( i, e ) {
+			to_encode += this.checked ? '1' : '0';
+		});
+		
+		// to_encode should look like '1101010101000000101101010101';
+
+
+STEP 2: encode the string
+
+		var RLE_URL = new RLE_URL();
+		var countries = RLE_URL.encode(to_encode);
+		
+		// countries should look something like a81ja104ja11
+		window.location = '?countries=' + countries;
+
+
+STEP 3: if you're reversing the string
+
+		var RLE_URL = new RLE_URL();
+		var parms = window.location.toString().match(/countries=(.*)/i);
+		var to_decode = RLE_URL.decode( parms[1] );
+
+
+STEP 4: re-populate checkboxes in a form
+
+		$(".countries input[type=checkbox]").each( function( i, e ) {
+			this.checked = to_decode.substr(i,1) == '1' ? true : false;
+		});
+
+It is up to you to manage forward/reverse lookups for values and ensure that
+they're scanned in proper and consistent order. Variants of this quick jQuery
+scanning / encoding routine can utilize server-side ID numbers.
+
+
+================================================================================
+LICENSE
+================================================================================
+No license, so anything goes.  However, short attribution would be polite.
+
+Use this library at own risk.
+================================================================================
